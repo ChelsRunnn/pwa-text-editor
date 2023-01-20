@@ -1,7 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const WebpackPwaManifest = require('webpack-pwa-manifest');
-// const MiniCssExtractPlugin = require('mini-css-extract-plugin'); 
-      // ^^ NEEDED??
 const path = require('path');
 const { InjectManifest } = require('workbox-webpack-plugin');
 
@@ -22,17 +20,17 @@ module.exports = () => {
       path: path.resolve(__dirname, 'dist'),
     },
     plugins: [
+      // plugin that creates html file and includes it in bundle
       new HtmlWebpackPlugin({
         template: './index.html',
         title: 'JATE'
       }),
-      // copied from act 19, injectManifest webpack.config.js
-      new MiniCssExtractPlugin(),
+      // injects custom service worker
       new InjectManifest({
         swSrc: './src-sw.js',
         swDest: 'service-worker.js',
       }), 
-      // copied from act 26 solved
+      // creates manifest.json file
       new WebpackPwaManifest({
         name: 'JATE',
         short_name: 'JATE',
@@ -41,6 +39,8 @@ module.exports = () => {
         theme_color: '#7eb4e2',
         start_url: './',
         publicPath: './',
+        fingerprints: false,
+        inject: true,
         icons: [
           {
             src: path.resolve('src/images/logo.png'),
@@ -56,7 +56,7 @@ module.exports = () => {
         // rules copied from act 19, injectManifest webpack.config.js
         {
           test: /\.css$/i,
-          use: [MiniCssExtractPlugin.loader, 'css-loader'],
+          use: ['style-loader', 'css-loader'],
         },
         {
           test: /\.(png|svg|jpg|jpeg|gif)$/i,
@@ -64,11 +64,12 @@ module.exports = () => {
         },
         {
           test: /\.m?js$/,
-          exclude: /(node_modules|bower_components)/,
+          exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
             options: {
               presets: ['@babel/preset-env'],
+              plugins: ['@babel/plugin-proposal-object-rest-spread', '@babel/transform-runtime']
             },
           },
         },
